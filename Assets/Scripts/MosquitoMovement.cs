@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class MosquitoMovement : MonoBehaviour
 {
 
-    public Transform playerTransform;
+    public Transform PlayerTransform;
     NavMeshAgent agent;
     // Start is called before the first frame update
     void Start()
@@ -17,6 +17,6 @@ public class MosquitoMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        agent.destination = playerTransform.position;
+        agent.destination = PlayerTransform.position;
     }
 }

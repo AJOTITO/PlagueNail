@@ -242,6 +242,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3314684352389103923, guid: 003f0c1254de2ae409b27307b6cd05ce, type: 3}
+      propertyPath: PlayerTransform
+      value: 
+      objectReference: {fileID: 2127945646}
+    - target: {fileID: 3314684352389103923, guid: 003f0c1254de2ae409b27307b6cd05ce, type: 3}
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 0}

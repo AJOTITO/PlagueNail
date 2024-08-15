@@ -1,115 +1,37 @@
 using UnityEngine;
-using System;
+using UnityEngine.Events;
 
 public class Target : MonoBehaviour
 {
-    [System.Serializable]
-    public class TargetType
-    {
-        public string name;
-        public float maxHealth;
-        public int pointValue;
-        public GameObject deathEffect;
-        public AudioClip hitSound;
-        public AudioClip deathSound;
-    }
+    public float maxHealth = 100f;
+    private float currentHealth;
 
-    public TargetType targetType;
+    public UnityEvent OnDestroyed;
+    public UnityEvent<int> OnScoreChanged;
 
-    [Header("Health")]
-    public float currentHealth;
-    public GameObject healthBarPrefab;
-    private GameObject healthBarInstance;
-
-    [Header("Effects")]
-    public GameObject hitEffect;
-    public Transform[] hitPoints;
-
-    [Header("Audio")]
-    public AudioSource audioSource;
-
-    public event Action<Target> OnDestroyed;
-    public static event Action<int> OnScoreChanged; // Nuevo evento para manejar la puntuación
+    [SerializeField] private int scoreValue = 10;
 
     private void Start()
     {
-        currentHealth = targetType.maxHealth;
-        InitializeHealthBar();
+        currentHealth = maxHealth;
     }
 
-    private void InitializeHealthBar()
-    {
-        if (healthBarPrefab != null)
-        {
-            healthBarInstance = Instantiate(healthBarPrefab, transform.position + Vector3.up * 2f, Quaternion.identity, transform);
-            UpdateHealthBar();
-        }
-    }
-
-    public void TakeDamage(float amount, Vector3 hitPoint)
+    public void TakeDamage(float amount)
     {
         currentHealth -= amount;
-        UpdateHealthBar();
+        Debug.Log($"{gameObject.name} recibió {amount} de daño. Salud actual: {currentHealth}");
 
-        PlayHitEffect(hitPoint);
-        PlayHitSound();
-
-        if (currentHealth <= 0f)
+        if (currentHealth <= 0)
         {
             Die();
         }
     }
 
-    private void UpdateHealthBar()
-    {
-        if (healthBarInstance != null)
-        {
-            float healthPercentage = currentHealth / targetType.maxHealth;
-            healthBarInstance.transform.localScale = new Vector3(healthPercentage, 1f, 1f);
-        }
-    }
-
-    private void PlayHitEffect(Vector3 hitPoint)
-    {
-        if (hitEffect != null)
-        {
-            GameObject effect = Instantiate(hitEffect, hitPoint, Quaternion.identity);
-            Destroy(effect, 2f);
-        }
-    }
-
-    private void PlayHitSound()
-    {
-        if (audioSource != null && targetType.hitSound != null)
-        {
-            audioSource.PlayOneShot(targetType.hitSound);
-        }
-    }
-
     private void Die()
     {
-        if (targetType.deathEffect != null)
-        {
-            Instantiate(targetType.deathEffect, transform.position, Quaternion.identity);
-        }
-
-        if (audioSource != null && targetType.deathSound != null)
-        {
-            AudioSource.PlayClipAtPoint(targetType.deathSound, transform.position);
-        }
-
-        OnDestroyed?.Invoke(this);
-        OnScoreChanged?.Invoke(targetType.pointValue); // Invocamos el evento de puntuación
-
+        Debug.Log($"{gameObject.name} ha sido destruido.");
+        OnScoreChanged.Invoke(scoreValue);
+        OnDestroyed.Invoke();
         Destroy(gameObject);
-    }
-
-    public Vector3 GetRandomHitPoint()
-    {
-        if (hitPoints != null && hitPoints.Length > 0)
-        {
-            return hitPoints[UnityEngine.Random.Range(0, hitPoints.Length)].position;
-        }
-        return transform.position;
     }
 }

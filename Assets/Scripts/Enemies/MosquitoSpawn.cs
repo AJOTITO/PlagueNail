@@ -8,6 +8,7 @@ public class EnemySpawner : MonoBehaviour
     [System.Serializable]
     public class EnemyType
     {
+        public string name;
         public GameObject enemyPrefab;
         public int weight = 1;
     }
@@ -23,47 +24,27 @@ public class EnemySpawner : MonoBehaviour
     public float difficultyIncreaseInterval = 30f;
     public int maxDifficultyLevel = 10;
 
+    public ScoreManager scoreManager;
+
     private List<GameObject> activeEnemies = new List<GameObject>();
     private float currentSpawnInterval;
     private int currentDifficultyLevel = 0;
-
-    void OnValidate()
-    {
-        Debug.Log("OnValidate llamado. Verificando tipos de enemigos.");
-        for (int i = 0; i < enemyTypes.Count; i++)
-        {
-            if (enemyTypes[i].enemyPrefab == null)
-            {
-                Debug.LogError($"El prefab del enemigo en el índice {i} es nulo en OnValidate.");
-            }
-        }
-    }
-
-    void Awake()
-    {
-        Debug.Log("Awake llamado. Verificando tipos de enemigos.");
-        for (int i = 0; i < enemyTypes.Count; i++)
-        {
-            if (enemyTypes[i].enemyPrefab == null)
-            {
-                Debug.LogError($"El prefab del enemigo en el índice {i} es nulo en Awake.");
-            }
-        }
-    }
+    private Coroutine spawnCoroutine;
+    private bool isSpawning = true;
 
     void Start()
     {
-        Debug.Log($"Start llamado. EnemySpawner iniciado. Tipos de enemigos definidos: {enemyTypes.Count}");
+        Debug.Log($"EnemySpawner iniciado. Tipos de enemigos definidos: {enemyTypes.Count}");
 
         for (int i = 0; i < enemyTypes.Count; i++)
         {
             if (enemyTypes[i].enemyPrefab == null)
             {
-                Debug.LogError($"El prefab del enemigo en el índice {i} es nulo en Start.");
+                Debug.LogError($"El prefab del enemigo '{enemyTypes[i].name}' en el índice {i} es nulo.");
             }
             else
             {
-                Debug.Log($"Enemigo {i}: {enemyTypes[i].enemyPrefab.name}, Peso: {enemyTypes[i].weight}");
+                Debug.Log($"Enemigo {i}: {enemyTypes[i].name}, Peso: {enemyTypes[i].weight}");
             }
         }
 
@@ -81,22 +62,42 @@ public class EnemySpawner : MonoBehaviour
         }
 
         currentSpawnInterval = initialSpawnInterval;
-        StartCoroutine(SpawnEnemies());
+        spawnCoroutine = StartCoroutine(SpawnEnemies());
         StartCoroutine(IncreaseDifficulty());
     }
 
     IEnumerator SpawnEnemies()
     {
-        while (true)
+        while (isSpawning)
         {
             yield return new WaitForSeconds(currentSpawnInterval);
 
-            activeEnemies.RemoveAll(enemy => enemy == null);
-
-            if (activeEnemies.Count < maxEnemies)
+            try
             {
-                SpawnEnemy();
+                CleanupDestroyedEnemies();
+
+                if (activeEnemies.Count < maxEnemies)
+                {
+                    SpawnEnemy();
+                }
+                else
+                {
+                    Debug.Log($"No se generan más enemigos. Activos: {activeEnemies.Count}, Máximo: {maxEnemies}");
+                }
             }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error durante la generación de enemigos: {e.Message}");
+            }
+        }
+    }
+
+    void CleanupDestroyedEnemies()
+    {
+        int removedCount = activeEnemies.RemoveAll(enemy => enemy == null);
+        if (removedCount > 0)
+        {
+            Debug.Log($"Se eliminaron {removedCount} enemigos destruidos de la lista activa.");
         }
     }
 
@@ -112,7 +113,7 @@ public class EnemySpawner : MonoBehaviour
 
         if (enemyType.enemyPrefab == null)
         {
-            Debug.LogWarning($"El prefab del enemigo seleccionado es nulo. Índice: {enemyTypes.IndexOf(enemyType)}");
+            Debug.LogWarning($"El prefab del enemigo '{enemyType.name}' es nulo. No se puede spawner.");
             return;
         }
 
@@ -125,22 +126,29 @@ public class EnemySpawner : MonoBehaviour
         Target enemyTarget = newEnemy.GetComponent<Target>();
         if (enemyTarget != null)
         {
-            enemyTarget.OnDestroyed += (target) => activeEnemies.Remove(newEnemy);
+            enemyTarget.OnDestroyed.AddListener(() => OnEnemyDestroyed(newEnemy));
+
+            if (scoreManager != null)
+            {
+                enemyTarget.OnScoreChanged.AddListener(scoreManager.AddScore);
+            }
+            else
+            {
+                Debug.LogWarning("ScoreManager no está asignado en EnemySpawner.");
+            }
         }
         else
         {
             Debug.LogWarning($"El enemigo {newEnemy.name} no tiene un componente Target.");
         }
 
-        Renderer enemyRenderer = newEnemy.GetComponent<Renderer>();
-        if (enemyRenderer != null)
-        {
-            Debug.Log($"Enemigo {newEnemy.name} tiene Renderer. Visible: {enemyRenderer.isVisible}");
-        }
-        else
-        {
-            Debug.LogWarning($"El enemigo {newEnemy.name} no tiene un componente Renderer.");
-        }
+        Debug.Log($"Enemigo generado. Total activos: {activeEnemies.Count}");
+    }
+
+    void OnEnemyDestroyed(GameObject enemy)
+    {
+        activeEnemies.Remove(enemy);
+        Debug.Log($"Enemigo destruido. Total activos restantes: {activeEnemies.Count}");
     }
 
     EnemyType GetRandomEnemyType()
@@ -177,6 +185,15 @@ public class EnemySpawner : MonoBehaviour
             maxEnemies++;
 
             Debug.Log($"Dificultad aumentada. Nivel: {currentDifficultyLevel}, Intervalo de spawn: {currentSpawnInterval}, Max enemigos: {maxEnemies}");
+        }
+    }
+
+    void OnDisable()
+    {
+        isSpawning = false;
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
         }
     }
 

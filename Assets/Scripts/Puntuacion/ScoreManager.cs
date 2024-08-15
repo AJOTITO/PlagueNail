@@ -1,32 +1,24 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class ScoreManager : MonoBehaviour
 {
-    public Text scoreText;
-    private int currentScore = 0;
+    public TextMeshProUGUI scoreText;
+    private int score = 0;
 
-    private void OnEnable()
+    private void Start()
     {
-        Target.OnScoreChanged += AddScore;
+        UpdateScoreDisplay();
     }
 
-    private void OnDisable()
+    public void AddScore(int points)
     {
-        Target.OnScoreChanged -= AddScore;
-    }
-
-    private void AddScore(int points)
-    {
-        currentScore += points;
+        score += points;
         UpdateScoreDisplay();
     }
 
     private void UpdateScoreDisplay()
     {
-        if (scoreText != null)
-        {
-            scoreText.text = "Score: " + currentScore;
-        }
+        scoreText.text = "Score: " + score.ToString();
     }
 }

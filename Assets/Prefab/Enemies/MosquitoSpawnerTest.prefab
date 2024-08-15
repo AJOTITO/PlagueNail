@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 2283109607625356537}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 47.5, y: -3.7205489, z: 65.2}
+  m_LocalPosition: {x: -1455, y: 583, z: 1081}
   m_LocalScale: {x: 1.4581575, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,9 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0cf3f45116387f4a9ed299ac4f76b1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 0}
+  enemyTypes: []
   maxEnemies: 10
-  spawnAmount: 5
-  spawnInterval: 2
+  initialSpawnInterval: 2
+  minSpawnInterval: 0.5
+  spawnIntervalDecreaseRate: 0.1
   spawnPoints:
   - {fileID: 5334963162666012095}
+  difficultyIncreaseInterval: 30
+  maxDifficultyLevel: 10
+  scoreManager: {fileID: 0}

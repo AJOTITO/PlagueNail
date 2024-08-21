@@ -347,12 +347,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0cf3f45116387f4a9ed299ac4f76b1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 1786665122}
+  enemyTypes: []
   maxEnemies: 10
-  spawnAmount: 5
-  spawnInterval: 2
+  initialSpawnInterval: 2
+  minSpawnInterval: 0.5
+  spawnIntervalDecreaseRate: 0.1
   spawnPoints:
   - {fileID: 501234542}
+  difficultyIncreaseInterval: 30
+  maxDifficultyLevel: 10
+  scoreManager: {fileID: 0}
 --- !u!4 &501234542
 Transform:
   m_ObjectHideFlags: 0
@@ -588,11 +592,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 929142218}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1786665122 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4765095952649270848, guid: 003f0c1254de2ae409b27307b6cd05ce, type: 3}
-  m_PrefabInstance: {fileID: 467736080}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1786665123 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4379821085605927994, guid: 003f0c1254de2ae409b27307b6cd05ce, type: 3}
@@ -645,7 +644,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.016666668
+  m_VoxelSize: 0.33333334
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: e1850ecaf8abaa24f8d3fbbbb5746947, type: 2}
   m_BuildHeightMesh: 0
@@ -814,8 +813,14 @@ MonoBehaviour:
   MovimientoVertical: 0
   Player: {fileID: 0}
   PlayerSpeed: 5
+  maxSpeed: 10
+  acceleration: 0.5
   gravedad: 9.8
   FuerzaSalto: 2.5
+  dashForce: 50
+  dashDuration: 0.2
+  dashCooldown: 5
+  dashKey: 101
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
